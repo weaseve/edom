@@ -39,3 +39,24 @@ th, td {
 th {
   background: #eee;
 }
+
+/* Copy-to-clipboard styles */
+td.copyable {
+  cursor: pointer;
+  position: relative;
+}
+
+td.copyable::after {
+  content: "Click to copy";
+  position: absolute;
+  right: 0.5rem;
+  top: 0.25rem;
+  font-size: 0.7rem;
+  color: #777;
+  opacity: 0.9;
+}
+
+td.copyable.copied {
+  background: #e6ffea;
+  transition: background 0.25s ease;
+}

@@ -87,13 +87,44 @@ function renderTable(data) {
   for (const row of data) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${row.system}</td>
-      <td>${row.station}</td>
+      <td class="copyable" data-copy="${row.system}" title="Click to copy">${row.system}</td>
+      <td class="copyable" data-copy="${row.station}" title="Click to copy">${row.station}</td>
       <td>${row.type}</td>
       <td>${new Date(row.updated).toISOString().replace("T", " ").slice(0, 19)}</td>
     `;
     tbody.appendChild(tr);
   }
+}
+
+// Add click-to-copy behavior via event delegation
+const tbodyEl = document.querySelector('#resultTable tbody');
+if (tbodyEl) {
+  tbodyEl.addEventListener('click', async (ev) => {
+    const td = ev.target.closest('td');
+    if (!td || !td.classList.contains('copyable')) return;
+    const text = td.dataset.copy || td.textContent.trim();
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+      }
+      td.classList.add('copied');
+      const prevTitle = td.getAttribute('title') || '';
+      td.setAttribute('title', 'Copied!');
+      setTimeout(() => {
+        td.classList.remove('copied');
+        td.setAttribute('title', prevTitle);
+      }, 1000);
+    } catch (err) {
+      console.warn('コピーに失敗しました', err);
+    }
+  });
 }
 
 function updateStatus(msg) {
