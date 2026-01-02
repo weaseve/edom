@@ -13,8 +13,11 @@ async function scrapeInara() {
     const html = await res.text();
     const doc = new DOMParser().parseFromString(html, "text/html");
 
-    const links = [...doc.querySelectorAll("a[href^='/elite/starsystem/']")];
-    systemNames = [...new Set(links.map(a => a.textContent.trim()))];
+    // Match anchors in the Inara table (handles e.g. /elite/starsystem-powerplay/)
+    const links = [...doc.querySelectorAll("table.tablesortercollapsed a[href^='/elite/starsystem']")];
+    // Normalize whitespace and trim; remove duplicates
+    systemNames = [...new Set(links.map(a => a.textContent.replace(/\s+/g, " ").trim()))];
+    console.log("Inara systems:", systemNames);
 
     updateStatus(`取得完了：${systemNames.length} 星系`);
   } catch (e) {
