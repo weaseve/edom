@@ -44,24 +44,40 @@ async function fetchEdsmData() {
       for (const s of stations) {
         if (
           ["Coriolis Starport", "Orbis Starport", "Ocellus Starport"].includes(s.type) &&
-          s.haveMarket && s.marketUpdatedAt
+          s.haveMarket && s.updateTime && s.updateTime.market
         ) {
+          // Parse market update time (try native parse, then fallback to ISO with Z)
+          let marketStr = s.updateTime.market;
+          let ts = Date.parse(marketStr);
+          if (isNaN(ts)) {
+            const alt = marketStr.replace(' ', 'T') + 'Z';
+            ts = Date.parse(alt);
+          }
+          if (isNaN(ts)) {
+            console.warn(`パース失敗: ${s.name} in ${name}`, marketStr);
+            ts = Date.now();
+          }
+
           results.push({
             system: name,
             station: s.name,
             type: s.type,
-            updated: s.marketUpdatedAt
+            updated: ts // stored in milliseconds
           });
         }
       }
     } catch (e) {
       console.warn(`失敗: ${name}`, e);
     }
+
+    // After each system, sort by oldest market update and refresh the table
+    results.sort((a, b) => a.updated - b.updated);
+    renderTable(results);
+    updateStatus(`進捗：${i + 1}/${systemNames.length} - ${results.length} 件のStarport`);
+
     await new Promise(r => setTimeout(r, 1000)); // レート制限対策
   }
 
-  results.sort((a, b) => a.updated - b.updated);
-  renderTable(results);
   updateStatus(`完了：${results.length} 件のStarportを取得`);
 }
 
@@ -74,7 +90,7 @@ function renderTable(data) {
       <td>${row.system}</td>
       <td>${row.station}</td>
       <td>${row.type}</td>
-      <td>${new Date(row.updated * 1000).toISOString().replace("T", " ").slice(0, 19)}</td>
+      <td>${new Date(row.updated).toISOString().replace("T", " ").slice(0, 19)}</td>
     `;
     tbody.appendChild(tr);
   }
