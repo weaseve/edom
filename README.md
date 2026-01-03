@@ -1,33 +1,35 @@
-# inara-edsm-viewer
+# Elite Dengerous Oldest Market (EDOM)
 
-ブラウザ（Vanilla JavaScript）で動作する、Inara のスクレイピング結果と EDSM API を組み合わせてスター・ポートのマーケット更新を一覧表示するテンプレートプロジェクトです。
+**Elite Dengerous Oldest Market（略称: EDOM）** は、Inara のページから星系リストを取得し、EDSM の各星系マーケットの最終更新日時を取得して、更新日時が古い順に一覧表示するシンプルなフロントエンドツールです。
 
-## 構成
+**公開ページ:** https://weaseve.github.io/edom/
+
+## 概要
+- テキストフィールドに **Inara の URL** を入力（パターンマッチで受け付けます）
+- そのページから **星系のリスト** を取得
+- 各星系について **EDSM API** からマーケットの最終更新日時を取得
+- **最終更新日時が古い順**（最も古いものが上）で表形式で表示します
+
+## ファイル構成
 ```
-inara-edsm-viewer/
-├── index.html         ← メインHTML（UIと構造）
-├── style.css          ← スタイルシート（見た目）
-├── script.js          ← ロジック（Inara取得＋EDSM API＋表示）
-├── assets/            ← 任意の画像やアイコン（必要に応じて）
-└── README.md          ← プロジェクト説明
+edom/
+├── index.html     ← メイン HTML（UI と構造）
+├── style.css      ← スタイルシート
+├── script.js      ← ロジック（Inara 取得 + EDSM API 取得 + 表示）
+├── assets/        ← 画像やアイコン
+└── README.md      ← この説明
 ```
 
 ## 使い方
-1. このリポジトリをクローン/ダウンロードします。
-2. `index.html` をブラウザで開いてください（ローカルで動作します）。
+1. このリポジトリをクローンまたはダウンロードしてください。
+2. `index.html` をブラウザで開くとローカルで動作します。
 
-> 注意: Inara のページは同一生成元ポリシー (CORS) によって直接取得できない場合があります。テンプレートでは `https://corsproxy.io/?` を使った簡易プロキシ経由で取得するようになっています。GitHub Pages にデプロイする場合も同様に CORS を考慮してください。
+> 注意: Inara のページは同一生成元ポリシー (CORS) によって直接取得できない場合があります。テンプレートでは `https://corsproxy.io/?` 等の簡易プロキシを使って取得する仕組みになっています。公開（GitHub Pages 等）する場合も CORS の扱いにご注意ください。
 
 ## デプロイ（GitHub Pages）
-1. GitHub に新しいリポジトリを作成します（例: `inara-edsm-viewer`）。
-2. このファイル群を `main` ブランチへプッシュします。
-3. リポジトリの Settings → Pages で `main` / `/ (root)` を選択すると公開されます。
-
-## 拡張案
-- 絞り込み／ソート機能の追加
-- CSV 出力
-- 複数 Power に対応
+1. リポジトリを GitHub にプッシュします（例: ブランチ `main`）。
+2. リポジトリの Settings → Pages で `main` / `/ (root)` を選択して公開してください。
 
 ---
 
-作成者: テンプレート（Copilot）
+作成者: weaseve
