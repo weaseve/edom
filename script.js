@@ -4,19 +4,47 @@ let results = [];
 document.getElementById("scrapeInara").addEventListener("click", scrapeInara);
 document.getElementById("fetchEdsm").addEventListener("click", fetchEdsmData);
 
-async function scrapeInara() {
-  updateStatus("Inaraから星系を取得中...");
-  const proxy = "https://corsproxy.io/?";
-  const url = proxy + encodeURIComponent("https://inara.cz/elite/power-controlled/7/");
-  try {
-    const res = await fetch(url);
-    const html = await res.text();
-    const doc = new DOMParser().parseFromString(html, "text/html");
+// Clear URL error when the input changes
+const inaraInputEl = document.getElementById('inaraUrl');
+if (inaraInputEl) {
+  inaraInputEl.addEventListener('input', () => {
+    inaraInputEl.classList.remove('invalid');
+    const err = document.getElementById('inaraUrlError');
+    if (err) err.textContent = '';
+  });
+} 
 
-    // Match anchors in the Inara table (handles e.g. /elite/starsystem-powerplay/)
-    const links = [...doc.querySelectorAll("table.tablesortercollapsed a[href^='/elite/starsystem']")];
-    // Normalize whitespace and trim; remove duplicates
-    systemNames = [...new Set(links.map(a => a.textContent.replace(/\s+/g, " ").trim()))];
+async function scrapeInara() {
+  const input = document.getElementById('inaraUrl');
+  const raw = (input && input.value || '').trim();
+  const validation = validateInaraUrl(raw);
+  if (!validation.ok) {
+    if (input) input.classList.add('invalid');
+    const err = document.getElementById('inaraUrlError');
+    if (err) err.textContent = validation.message;
+    updateStatus("InaraのURLが無効です");
+    return;
+  }
+
+  if (input) {
+    input.classList.remove('invalid');
+    const err = document.getElementById('inaraUrlError');
+    if (err) err.textContent = '';
+  }
+
+  updateStatus("Inaraから星系を取得中...");
+  try {
+    let systems = [];
+    const target = validation.normalizedUrl;
+    if (validation.type === 'power-controlled') {
+      systems = await scrapePowerControlled(target);
+    } else if (validation.type === 'power-exploited') {
+      systems = await scrapePowerExploited(target);
+    } else if (validation.type === 'power-contested') {
+      systems = await scrapePowerContested(target);
+    }
+
+    systemNames = [...new Set(systems)];
     console.log("Inara systems:", systemNames);
 
     updateStatus(`取得完了：${systemNames.length} 星系`);
@@ -24,6 +52,49 @@ async function scrapeInara() {
     updateStatus("Inaraの取得に失敗しました");
     console.error(e);
   }
+}
+
+// Validate an Inara URL and normalize it
+function validateInaraUrl(url) {
+  if (!url) return { ok: false, message: 'URLを入力してください' };
+  let candidate = url;
+  if (!/^https?:\/\//i.test(candidate)) {
+    candidate = 'https://' + candidate;
+  }
+  try {
+    const u = new URL(candidate);
+    const match = u.pathname.match(/^\/elite\/(power-(?:controlled|exploited|contested))\/(\d+)\/?$/i);
+    if (!match) {
+      return { ok: false, message: 'サポートされていないURLパターンです。例: https://inara.cz/elite/power-controlled/7/' };
+    }
+    const type = match[1].toLowerCase();
+    const id = match[2];
+    const normalizedUrl = `${u.protocol}//${u.host}/elite/${type}/${id}/`;
+    return { ok: true, type, id, normalizedUrl };
+  } catch (e) {
+    return { ok: false, message: '無効なURLです' };
+  }
+}
+
+// Generic fetch + parse for power pages
+async function scrapePowerGeneric(targetUrl) {
+  const proxy = "https://corsproxy.io/?";
+  const url = proxy + encodeURIComponent(targetUrl);
+  const res = await fetch(url);
+  const html = await res.text();
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const links = [...doc.querySelectorAll("table.tablesortercollapsed a[href^='/elite/starsystem']")];
+  return links.map(a => a.textContent.replace(/\s+/g, " ").trim());
+}
+
+async function scrapePowerControlled(targetUrl) {
+  return scrapePowerGeneric(targetUrl);
+}
+async function scrapePowerExploited(targetUrl) {
+  return scrapePowerGeneric(targetUrl);
+}
+async function scrapePowerContested(targetUrl) {
+  return scrapePowerGeneric(targetUrl);
 }
 
 async function fetchEdsmData() {

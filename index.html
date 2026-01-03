@@ -10,8 +10,11 @@
   <h1>Starport Market Update Viewer</h1>
 
   <div class="controls">
+    <label for="inaraUrl" class="inara-label">Inara URL</label>
+    <input id="inaraUrl" type="url" placeholder="https://inara.cz/elite/power-controlled/7/" value="https://inara.cz/elite/power-controlled/7/" />
     <button id="scrapeInara">Inaraから星系取得</button>
     <button id="fetchEdsm">EDSMからマーケット情報取得</button>
+    <div id="inaraUrlError" class="error" aria-live="polite"></div>
   </div>
 
   <div id="status">準備完了</div>
