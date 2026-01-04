@@ -24,6 +24,39 @@ button {
   color: #555;
 }
 
+/* Filters UI */
+.filters {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  align-items: flex-start;
+}
+.filter-group {
+  background: #fff;
+  padding: 0.6rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.filter-group strong {
+  display: block;
+  margin-bottom: 0.4rem;
+}
+.filter-group label {
+  display: inline-block;
+  margin-right: 0.8rem;
+  font-size: 0.95rem;
+}
+.economy-filters {
+  max-width: 480px;
+}
+.filter-actions {
+  margin-top: 0.6rem;
+}
+.filter-actions button {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.9rem;
+} 
+
 /* Inara URL input styles */
 .inara-label {
   margin-right: 0.5rem;

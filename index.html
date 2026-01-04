@@ -20,12 +20,50 @@
 
   <div id="status">準備完了</div>
 
+  <div id="filters" class="filters">
+    <div class="filter-group">
+      <strong>ステーションタイプ</strong>
+      <label><input type="checkbox" data-station-type="Coriolis Starport" class="station-type"> Coriolis Starport</label>
+      <label><input type="checkbox" data-station-type="Orbis Starport" class="station-type"> Orbis Starport</label>
+      <label><input type="checkbox" data-station-type="Ocellus Starport" class="station-type"> Ocellus Starport</label>
+      <label><input type="checkbox" data-station-type="Asteroid base" class="station-type"> Asteroid base</label>
+      <label><input type="checkbox" data-station-type="Outpost" class="station-type"> Outpost</label>
+      <label><input type="checkbox" data-station-type="Fleet Carrier" class="station-type"> Fleet Carrier</label>
+      <label><input type="checkbox" data-station-type="Mega ship" class="station-type"> Mega ship</label>
+      <label><input type="checkbox" data-station-type="Planetary Outpost" class="station-type"> Planetary Outpost</label>
+      <label><input type="checkbox" data-station-type="Planetary Port" class="station-type"> Planetary Port</label>
+      <label><input type="checkbox" data-station-type="Odyssey Settlement" class="station-type"> Odyssey Settlement</label>
+    </div>
+    <div class="filter-group">
+      <strong>Economy</strong>
+      <div id="economyFilters" class="economy-filters">
+        <label><input type="checkbox" class="economy-filter" data-economy="Agriculture"> Agriculture</label>
+        <label><input type="checkbox" class="economy-filter" data-economy="Colony"> Colony</label>
+        <label><input type="checkbox" class="economy-filter" data-economy="Extraction"> Extraction</label>
+        <label><input type="checkbox" class="economy-filter" data-economy="Fleet Carrier"> Fleet Carrier</label>
+        <label><input type="checkbox" class="economy-filter" data-economy="High Tech"> High Tech</label>
+        <label><input type="checkbox" class="economy-filter" data-economy="Industrial"> Industrial</label>
+        <label><input type="checkbox" class="economy-filter" data-economy="Military"> Military</label>
+        <label><input type="checkbox" class="economy-filter" data-economy="Prison"> Prison</label>
+        <label><input type="checkbox" class="economy-filter" data-economy="Refinery"> Refinery</label>
+        <label><input type="checkbox" class="economy-filter" data-economy="Rescue"> Rescue</label>
+        <label><input type="checkbox" class="economy-filter" data-economy="Service"> Service</label>
+        <label><input type="checkbox" class="economy-filter" data-economy="Terraforming"> Terraforming</label>
+        <label><input type="checkbox" class="economy-filter" data-economy="Tourism"> Tourism</label>
+      </div>
+      <div class="filter-actions">
+        <button id="clearFilters">フィルタクリア</button>
+      </div>
+    </div>
+  </div>
+
   <table id="resultTable">
     <thead>
       <tr>
         <th>星系</th>
         <th>ステーション</th>
         <th>タイプ</th>
+        <th>Economy</th>
         <th>最終更新日時 (UTC)</th>
       </tr>
     </thead>

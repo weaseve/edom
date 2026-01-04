@@ -5,44 +5,44 @@ document.getElementById("scrapeInara").addEventListener("click", scrapeInara);
 document.getElementById("fetchEdsm").addEventListener("click", fetchEdsmData);
 
 // Clear URL error when the input changes
-const inaraInputEl = document.getElementById('inaraUrl');
+const inaraInputEl = document.getElementById("inaraUrl");
 if (inaraInputEl) {
-  inaraInputEl.addEventListener('input', () => {
-    inaraInputEl.classList.remove('invalid');
-    const err = document.getElementById('inaraUrlError');
-    if (err) err.textContent = '';
+  inaraInputEl.addEventListener("input", () => {
+    inaraInputEl.classList.remove("invalid");
+    const err = document.getElementById("inaraUrlError");
+    if (err) err.textContent = "";
   });
-} 
+}
 
 async function scrapeInara() {
-  const input = document.getElementById('inaraUrl');
-  const raw = (input && input.value || '').trim();
+  const input = document.getElementById("inaraUrl");
+  const raw = ((input && input.value) || "").trim();
   const validation = validateInaraUrl(raw);
   if (!validation.ok) {
-    if (input) input.classList.add('invalid');
-    const err = document.getElementById('inaraUrlError');
+    if (input) input.classList.add("invalid");
+    const err = document.getElementById("inaraUrlError");
     if (err) err.textContent = validation.message;
     updateStatus("InaraのURLが無効です");
     return;
   }
 
   if (input) {
-    input.classList.remove('invalid');
-    const err = document.getElementById('inaraUrlError');
-    if (err) err.textContent = '';
+    input.classList.remove("invalid");
+    const err = document.getElementById("inaraUrlError");
+    if (err) err.textContent = "";
   }
 
   updateStatus("Inaraから星系を取得中...");
   try {
     let systems = [];
     const target = validation.normalizedUrl;
-    if (validation.type === 'power-controlled') {
+    if (validation.type === "power-controlled") {
       systems = await scrapePowerControlled(target);
-    } else if (validation.type === 'power-exploited') {
+    } else if (validation.type === "power-exploited") {
       systems = await scrapePowerExploited(target);
-    } else if (validation.type === 'power-contested') {
+    } else if (validation.type === "power-contested") {
       systems = await scrapePowerContested(target);
-    } else if (validation.type === 'nearest-starsystems') {
+    } else if (validation.type === "nearest-starsystems") {
       systems = await scrapeNearestStarsystems(target);
     }
 
@@ -58,19 +58,21 @@ async function scrapeInara() {
 
 // Validate an Inara URL and normalize it
 function validateInaraUrl(url) {
-  if (!url) return { ok: false, message: 'URLを入力してください' };
+  if (!url) return { ok: false, message: "URLを入力してください" };
   let candidate = url;
   if (!/^https?:\/\//i.test(candidate)) {
-    candidate = 'https://' + candidate;
+    candidate = "https://" + candidate;
   }
   try {
     const u = new URL(candidate);
     // normalize pathname to ensure trailing slash
     let pathname = u.pathname;
-    if (!pathname.endsWith('/')) pathname += '/';
+    if (!pathname.endsWith("/")) pathname += "/";
 
     // Power patterns
-    let match = pathname.match(/^\/elite\/(power-(?:controlled|exploited|contested))\/(\d+)\/?$/i);
+    let match = pathname.match(
+      /^\/elite\/(power-(?:controlled|exploited|contested))\/(\d+)\/?$/i
+    );
     if (match) {
       const type = match[1].toLowerCase();
       const id = match[2];
@@ -81,12 +83,16 @@ function validateInaraUrl(url) {
     // nearest-starsystems (accepts query params; don't care about the parameters)
     if (/^\/elite\/nearest-starsystems\/$/i.test(pathname)) {
       const normalizedUrl = `${u.protocol}//${u.host}${pathname}${u.search}`;
-      return { ok: true, type: 'nearest-starsystems', id: null, normalizedUrl };
+      return { ok: true, type: "nearest-starsystems", id: null, normalizedUrl };
     }
 
-    return { ok: false, message: 'サポートされていないURLパターンです。例: https://inara.cz/elite/power-controlled/7/ または https://inara.cz/elite/nearest-starsystems/?...' };
+    return {
+      ok: false,
+      message:
+        "サポートされていないURLパターンです。例: https://inara.cz/elite/power-controlled/7/ または https://inara.cz/elite/nearest-starsystems/?...",
+    };
   } catch (e) {
-    return { ok: false, message: '無効なURLです' };
+    return { ok: false, message: "無効なURLです" };
   }
 }
 
@@ -97,8 +103,12 @@ async function scrapePowerGeneric(targetUrl) {
   const res = await fetch(url);
   const html = await res.text();
   const doc = new DOMParser().parseFromString(html, "text/html");
-  const links = [...doc.querySelectorAll("table.tablesortercollapsed a[href^='/elite/starsystem']")];
-  return links.map(a => a.textContent.replace(/\s+/g, " ").trim());
+  const links = [
+    ...doc.querySelectorAll(
+      "table.tablesortercollapsed a[href^='/elite/starsystem']"
+    ),
+  ];
+  return links.map((a) => a.textContent.replace(/\s+/g, " ").trim());
 }
 
 async function scrapePowerControlled(targetUrl) {
@@ -126,21 +136,21 @@ async function fetchEdsmData() {
   for (let i = 0; i < systemNames.length; i++) {
     const name = systemNames[i];
     updateStatus(`EDSM取得中: ${name} (${i + 1}/${systemNames.length})`);
-    const url = `https://www.edsm.net/api-system-v1/stations?systemName=${encodeURIComponent(name)}`;
+    const url = `https://www.edsm.net/api-system-v1/stations?systemName=${encodeURIComponent(
+      name
+    )}`;
     try {
       const res = await fetch(url);
       const data = await res.json();
       const stations = data.stations || [];
       for (const s of stations) {
-        if (
-          ["Coriolis Starport", "Orbis Starport", "Ocellus Starport"].includes(s.type) &&
-          s.haveMarket && s.updateTime && s.updateTime.market
-        ) {
+        // Keep any station that has market update info; we will filter client-side
+        if (s.haveMarket && s.updateTime && s.updateTime.market) {
           // Parse market update time (try native parse, then fallback to ISO with Z)
           let marketStr = s.updateTime.market;
           let ts = Date.parse(marketStr);
           if (isNaN(ts)) {
-            const alt = marketStr.replace(' ', 'T') + 'Z';
+            const alt = marketStr.replace(" ", "T") + "Z";
             ts = Date.parse(alt);
           }
           if (isNaN(ts)) {
@@ -148,11 +158,37 @@ async function fetchEdsmData() {
             ts = Date.now();
           }
 
+          // extract up to two economies for the station (primary and second)
+          function extractEconomies(st) {
+            const set = new Set();
+            if (st.economies && Array.isArray(st.economies)) {
+              for (const item of st.economies) {
+                if (!item) continue;
+                if (typeof item === "string") set.add(item);
+                else if (item.name) set.add(item.name);
+                else if (item.type) set.add(item.type);
+              }
+            }
+            if (st.economy) {
+              if (typeof st.economy === "string") set.add(st.economy);
+              else if (st.economy.name) set.add(st.economy.name);
+            }
+            if (st.secondEconomy) {
+              if (typeof st.secondEconomy === "string")
+                set.add(st.secondEconomy);
+              else if (st.secondEconomy.name) set.add(st.secondEconomy.name);
+            }
+            if (st.market && st.market.primaryEconomy)
+              set.add(st.market.primaryEconomy);
+            return Array.from(set).filter(Boolean).slice(0, 2);
+          }
+
           results.push({
             system: name,
             station: s.name,
-            type: s.type,
-            updated: ts // stored in milliseconds
+            type: s.type || "",
+            economies: extractEconomies(s),
+            updated: ts, // stored in milliseconds
           });
         }
       }
@@ -162,13 +198,18 @@ async function fetchEdsmData() {
 
     // After each system, sort by oldest market update and refresh the table
     results.sort((a, b) => a.updated - b.updated);
-    renderTable(results);
-    updateStatus(`進捗：${i + 1}/${systemNames.length} - ${results.length} 件のStarport`);
+    // apply current filters to refreshed results
+    applyFilters();
+    updateStatus(
+      `進捗：${i + 1}/${systemNames.length} - ${
+        results.length
+      } 件のステーション取得`
+    );
 
-    await new Promise(r => setTimeout(r, 1000)); // レート制限対策
+    await new Promise((r) => setTimeout(r, 1000)); // レート制限対策
   }
 
-  updateStatus(`完了：${results.length} 件のStarportを取得`);
+  updateStatus(`完了：${results.length} 件のステーションを取得`);
 }
 
 function renderTable(data) {
@@ -177,45 +218,122 @@ function renderTable(data) {
   for (const row of data) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td class="copyable" data-copy="${row.system}" title="Click to copy">${row.system}</td>
-      <td class="copyable" data-copy="${row.station}" title="Click to copy">${row.station}</td>
+      <td class="copyable" data-copy="${row.system}" title="Click to copy">${
+      row.system
+    }</td>
+      <td class="copyable" data-copy="${row.station}" title="Click to copy">${
+      row.station
+    }</td>
       <td>${row.type}</td>
-      <td>${new Date(row.updated).toISOString().replace("T", " ").slice(0, 19)}</td>
+      <td>${
+        row.economies && row.economies.length ? row.economies.join(", ") : ""
+      }</td>
+      <td>${new Date(row.updated)
+        .toISOString()
+        .replace("T", " ")
+        .slice(0, 19)}</td>
     `;
     tbody.appendChild(tr);
   }
 }
 
 // Add click-to-copy behavior via event delegation
-const tbodyEl = document.querySelector('#resultTable tbody');
+const tbodyEl = document.querySelector("#resultTable tbody");
 if (tbodyEl) {
-  tbodyEl.addEventListener('click', async (ev) => {
-    const td = ev.target.closest('td');
-    if (!td || !td.classList.contains('copyable')) return;
+  tbodyEl.addEventListener("click", async (ev) => {
+    const td = ev.target.closest("td");
+    if (!td || !td.classList.contains("copyable")) return;
     const text = td.dataset.copy || td.textContent.trim();
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(text);
       } else {
-        const ta = document.createElement('textarea');
+        const ta = document.createElement("textarea");
         ta.value = text;
         document.body.appendChild(ta);
         ta.select();
-        document.execCommand('copy');
+        document.execCommand("copy");
         ta.remove();
       }
-      td.classList.add('copied');
-      const prevTitle = td.getAttribute('title') || '';
-      td.setAttribute('title', 'Copied!');
+      td.classList.add("copied");
+      const prevTitle = td.getAttribute("title") || "";
+      td.setAttribute("title", "Copied!");
       setTimeout(() => {
-        td.classList.remove('copied');
-        td.setAttribute('title', prevTitle);
+        td.classList.remove("copied");
+        td.setAttribute("title", prevTitle);
       }, 1000);
     } catch (err) {
-      console.warn('コピーに失敗しました', err);
+      console.warn("コピーに失敗しました", err);
     }
   });
 }
+
+// --- Filters: station type and economy ---
+const defaultStationTypes = new Set([
+  "Coriolis Starport",
+  "Orbis Starport",
+  "Ocellus Starport",
+  "Asteroid base",
+]);
+
+function initFilters() {
+  // initialize station-type checkboxes (default state)
+  document.querySelectorAll(".station-type").forEach((checkbox) => {
+    const t = checkbox.dataset.stationType;
+    if (defaultStationTypes.has(t)) checkbox.checked = true;
+    checkbox.addEventListener("change", applyFilters);
+  });
+
+  const clearBtn = document.getElementById("clearFilters");
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      // reset to defaults
+      document
+        .querySelectorAll(".station-type")
+        .forEach(
+          (cb) => (cb.checked = defaultStationTypes.has(cb.dataset.stationType))
+        );
+      document
+        .querySelectorAll(".economy-filter")
+        .forEach((cb) => (cb.checked = false));
+      applyFilters();
+    });
+  }
+
+  // Wire economy static checkboxes to filtering
+  document
+    .querySelectorAll(".economy-filter")
+    .forEach((cb) => cb.addEventListener("change", applyFilters));
+}
+
+function getSelectedSets() {
+  const types = new Set(
+    Array.from(document.querySelectorAll(".station-type:checked")).map(
+      (el) => el.dataset.stationType
+    )
+  );
+  const econ = new Set(
+    Array.from(document.querySelectorAll(".economy-filter:checked")).map(
+      (el) => el.dataset.economy
+    )
+  );
+  return { types, econ };
+}
+
+function applyFilters() {
+  const { types, econ } = getSelectedSets();
+  const filtered = results.filter((r) => {
+    const typeMatch = types.size === 0 || types.has(r.type);
+    const econMatch =
+      econ.size === 0 ||
+      (Array.isArray(r.economies) && r.economies.some((e) => econ.has(e)));
+    return typeMatch && econMatch;
+  });
+  renderTable(filtered);
+}
+
+// initialize UI
+initFilters();
 
 function updateStatus(msg) {
   document.getElementById("status").textContent = msg;
