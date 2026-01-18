@@ -144,12 +144,14 @@ table {
   width: 100%;
   border-collapse: collapse;
   background: white;
+  table-layout: auto;
 }
 
 th, td {
   border: 1px solid #ccc;
   padding: 0.5rem;
   text-align: left;
+  line-height: 1.5;
 }
 
 th {
@@ -208,6 +210,7 @@ td.refresh-cell {
   padding: 0;
   text-align: center;
   vertical-align: middle;
+  position: relative;
 }
 
 .refresh-btn {
@@ -217,17 +220,23 @@ td.refresh-cell {
   background: #f9f9f9;
   cursor: pointer;
   padding: 0;
-  font-size: 1.2rem;
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.2s ease, transform 0.1s ease;
-  aspect-ratio: 1 / 1;
+  font-size: 1.8rem;
+  line-height: 1;
+  box-sizing: border-box;
+  position: absolute;
+  top: 0;
 }
 
 .refresh-btn .material-symbols-rounded {
-  font-size: 1.2rem;
+  font-size: 1em;
   display: block;
+  line-height: 1;
+  font-family: 'Material Symbols Rounded';
 }
 
 .refresh-btn:hover {
