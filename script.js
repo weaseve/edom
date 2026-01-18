@@ -254,7 +254,11 @@ function renderTableList(data) {
       colorClass = "elapsed-yellow";
     }
     
+    // Create refresh button cell
+    const refreshButtonHTML = `<button class="refresh-btn" data-system="${row.system}" title="このシステムの情報を更新"><span class="material-symbols-rounded">sync</span></button>`;
+    
     tr.innerHTML = `
+      <td class="refresh-cell">${refreshButtonHTML}</td>
       <td class="copyable" data-copy="${row.system}" title="Click to copy">${
       row.system
     }</td>
@@ -319,6 +323,13 @@ function renderTableGrouped(data) {
         colorClass = "elapsed-yellow";
       }
 
+      // Create refresh button cell with rowspan for first station only
+      let refreshCell = "";
+      if (i === 0) {
+        const refreshButtonHTML = `<button class="refresh-btn" data-system="${system}" title="このシステムの情報を更新"><span class="material-symbols-rounded">sync</span></button>`;
+        refreshCell = `<td class="refresh-cell" rowspan="${stations.length}">${refreshButtonHTML}</td>`;
+      }
+
       // Create system name cell with rowspan for first station only
       let systemCell = "";
       if (i === 0) {
@@ -326,6 +337,7 @@ function renderTableGrouped(data) {
       }
 
       tr.innerHTML =
+        refreshCell +
         systemCell +
         `
       <td class="copyable" data-copy="${row.station}" title="Click to copy">${
@@ -370,6 +382,14 @@ const tbodyEl = document.querySelector("#resultTable tbody");
 if (tbodyEl) {
   tbodyEl.addEventListener("click", async (ev) => {
     const td = ev.target.closest("td");
+    
+    // Handle refresh button click
+    if (ev.target.classList.contains("refresh-btn")) {
+      const systemName = ev.target.dataset.system;
+      await refreshSystemData(systemName);
+      return;
+    }
+    
     if (!td || !td.classList.contains("copyable")) return;
     const text = td.dataset.copy || td.textContent.trim();
     try {
@@ -394,6 +414,76 @@ if (tbodyEl) {
       console.warn("コピーに失敗しました", err);
     }
   });
+}
+
+// Refresh a single system's data from EDSM
+async function refreshSystemData(systemName) {
+  updateStatus(`${systemName} のデータを更新中...`);
+  const url = `https://www.edsm.net/api-system-v1/stations?systemName=${encodeURIComponent(
+    systemName
+  )}`;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    const stations = data.stations || [];
+
+    // Helper function to extract economies
+    function extractEconomies(st) {
+      const set = new Set();
+      if (st.economies && Array.isArray(st.economies)) {
+        for (const item of st.economies) {
+          if (!item) continue;
+          if (typeof item === "string") set.add(item);
+          else if (item.name) set.add(item.name);
+          else if (item.type) set.add(item.type);
+        }
+      }
+      if (st.economy) {
+        if (typeof st.economy === "string") set.add(st.economy);
+        else if (st.economy.name) set.add(st.economy.name);
+      }
+      if (st.secondEconomy) {
+        if (typeof st.secondEconomy === "string") set.add(st.secondEconomy);
+        else if (st.secondEconomy.name) set.add(st.secondEconomy.name);
+      }
+      if (st.market && st.market.primaryEconomy) set.add(st.market.primaryEconomy);
+      return Array.from(set).filter(Boolean).slice(0, 2);
+    }
+
+    // Remove old entries for this system
+    results = results.filter((r) => r.system !== systemName);
+
+    // Add new entries
+    for (const s of stations) {
+      if (s.haveMarket && s.updateTime && s.updateTime.market) {
+        let marketStr = s.updateTime.market;
+        let ts = Date.parse(marketStr);
+        if (isNaN(ts)) {
+          const alt = marketStr.replace(" ", "T") + "Z";
+          ts = Date.parse(alt);
+        }
+        if (isNaN(ts)) {
+          ts = Date.now();
+        }
+
+        results.push({
+          system: systemName,
+          station: s.name,
+          type: s.type || "",
+          economies: extractEconomies(s),
+          updated: ts,
+        });
+      }
+    }
+
+    // Sort by oldest market update and refresh the table
+    results.sort((a, b) => a.updated - b.updated);
+    applyFilters();
+    updateStatus(`${systemName} の更新完了`);
+  } catch (e) {
+    console.warn(`${systemName} の更新に失敗しました`, e);
+    updateStatus(`${systemName} の更新に失敗しました`);
+  }
 }
 
 // --- Filters: station type and economy ---
