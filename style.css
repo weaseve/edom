@@ -64,6 +64,7 @@ button {
   background: #f0f0f0;
   cursor: pointer;
   transition: all 0.2s ease;
+  margin-right: -1px;
 }
 
 .display-type-btn:first-child {
@@ -151,11 +152,12 @@ th, td {
   border: 1px solid #ccc;
   padding: 0.5rem;
   text-align: left;
-  line-height: 1.5;
+  line-height: 1.5rem;
 }
 
 th {
-  background: #eee;
+  background: #d9d9d9;
+  font-weight: bold;
 }
 
 /* Copy-to-clipboard styles */
@@ -192,11 +194,26 @@ td.elapsed-red {
 
 /* System name cell styling for grouped view */
 td.system-name-cell {
-  font-weight: bold;
+  font-weight: normal;
   background: #f0f7ff;
   writing-mode: horizontal-tb;
   vertical-align: middle;
   text-align: center;
+}
+
+/* Alternate row colors for better visibility */
+tbody tr:nth-child(odd) td {
+  background-color: #fafafa;
+}
+
+tbody tr:nth-child(even) td {
+  background-color: #f0f0f0;
+}
+
+/* Preserve system name cell background even on alternate rows */
+tbody tr:nth-child(odd) td.system-name-cell,
+tbody tr:nth-child(even) td.system-name-cell {
+  background-color: #f0f7ff;
 }
 
 /* Refresh button column styles */
