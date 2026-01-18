@@ -215,8 +215,22 @@ async function fetchEdsmData() {
 function renderTable(data) {
   const tbody = document.querySelector("#resultTable tbody");
   tbody.innerHTML = "";
+  const now = Date.now();
   for (const row of data) {
     const tr = document.createElement("tr");
+    const updateDate = new Date(row.updated);
+    const diffMs = now - row.updated;
+    const diffDays = diffMs / (1000 * 60 * 60 * 24);
+    const diffText = formatElapsedTime(diffDays);
+    
+    // Determine color class based on elapsed days
+    let colorClass = "";
+    if (diffDays > 180) {
+      colorClass = "elapsed-red";
+    } else if (diffDays > 3) {
+      colorClass = "elapsed-yellow";
+    }
+    
     tr.innerHTML = `
       <td class="copyable" data-copy="${row.system}" title="Click to copy">${
       row.system
@@ -228,12 +242,32 @@ function renderTable(data) {
       <td>${
         row.economies && row.economies.length ? row.economies.join(", ") : ""
       }</td>
-      <td>${new Date(row.updated)
+      <td>${updateDate
         .toISOString()
         .replace("T", " ")
         .slice(0, 19)}</td>
+      <td class="${colorClass}">${diffText}</td>
     `;
     tbody.appendChild(tr);
+  }
+}
+
+function formatElapsedTime(days) {
+  if (days < 1) {
+    const hours = days * 24;
+    if (hours < 1) {
+      const minutes = hours * 60;
+      return Math.floor(minutes) + "分";
+    }
+    return Math.floor(hours) + "時間";
+  } else if (days < 30) {
+    return Math.floor(days) + "日";
+  } else if (days < 365) {
+    const months = days / 30;
+    return Math.floor(months) + "ヶ月";
+  } else {
+    const years = days / 365;
+    return Math.floor(years) + "年";
   }
 }
 

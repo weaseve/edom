@@ -114,3 +114,15 @@ td.copyable.copied {
   background: #e6ffea;
   transition: background 0.25s ease;
 }
+
+/* Elapsed time color classes */
+td.elapsed-yellow {
+  color: #cc8800;
+  font-weight: bold;
+}
+
+td.elapsed-red {
+  color: #cc0000;
+  font-weight: bold;
+}
+
