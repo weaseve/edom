@@ -384,8 +384,9 @@ if (tbodyEl) {
     const td = ev.target.closest("td");
     
     // Handle refresh button click
-    if (ev.target.classList.contains("refresh-btn")) {
-      const systemName = ev.target.dataset.system;
+    const refreshBtn = ev.target.closest(".refresh-btn");
+    if (refreshBtn) {
+      const systemName = refreshBtn.dataset.system;
       await refreshSystemData(systemName);
       return;
     }
