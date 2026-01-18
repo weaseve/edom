@@ -24,6 +24,51 @@ button {
   color: #555;
 }
 
+/* Display type selector */
+.display-type-selector {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.display-type-selector strong {
+  margin-right: 0.4rem;
+}
+
+.button-group {
+  display: flex;
+  gap: 0;
+}
+
+.display-type-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  border: 1px solid #999;
+  background: #f0f0f0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.display-type-btn:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.display-type-btn:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.display-type-btn:hover {
+  background: #e0e0e0;
+}
+
+.display-type-btn.active {
+  background: #4CAF50;
+  color: white;
+  border-color: #45a049;
+  font-weight: bold;
+}
+
 /* Filters UI */
 .filters {
   display: flex;
@@ -31,6 +76,7 @@ button {
   margin-bottom: 1rem;
   align-items: flex-start;
 }
+
 .filter-group {
   background: #fff;
   padding: 0.6rem;
@@ -125,4 +171,14 @@ td.elapsed-red {
   color: #cc0000;
   font-weight: bold;
 }
+
+/* System name cell styling for grouped view */
+td.system-name-cell {
+  font-weight: bold;
+  background: #f0f7ff;
+  writing-mode: horizontal-tb;
+  vertical-align: middle;
+  text-align: center;
+}
+
 
