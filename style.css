@@ -18,6 +18,22 @@ button {
   font-size: 1rem;
 }
 
+/* Material Symbols Rounded icon font */
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+}
+
 #status {
   margin-bottom: 1rem;
   font-style: italic;
@@ -201,10 +217,17 @@ td.refresh-cell {
   background: #f9f9f9;
   cursor: pointer;
   padding: 0;
-  font-size: 1rem;
-  display: block;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: background 0.2s ease, transform 0.1s ease;
   aspect-ratio: 1 / 1;
+}
+
+.refresh-btn .material-symbols-rounded {
+  font-size: 1.2rem;
+  display: block;
 }
 
 .refresh-btn:hover {

@@ -255,7 +255,7 @@ function renderTableList(data) {
     }
     
     // Create refresh button cell
-    const refreshButtonHTML = `<button class="refresh-btn" data-system="${row.system}" title="このシステムの情報を更新">🔄</button>`;
+    const refreshButtonHTML = `<button class="refresh-btn" data-system="${row.system}" title="このシステムの情報を更新"><span class="material-symbols-rounded">sync</span></button>`;
     
     tr.innerHTML = `
       <td class="refresh-cell">${refreshButtonHTML}</td>
@@ -326,7 +326,7 @@ function renderTableGrouped(data) {
       // Create refresh button cell with rowspan for first station only
       let refreshCell = "";
       if (i === 0) {
-        const refreshButtonHTML = `<button class="refresh-btn" data-system="${system}" title="このシステムの情報を更新">🔄</button>`;
+        const refreshButtonHTML = `<button class="refresh-btn" data-system="${system}" title="このシステムの情報を更新"><span class="material-symbols-rounded">sync</span></button>`;
         refreshCell = `<td class="refresh-cell" rowspan="${stations.length}">${refreshButtonHTML}</td>`;
       }
 
