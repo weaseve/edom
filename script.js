@@ -1,8 +1,21 @@
 let systemNames = [];
 let results = [];
+let currentDisplayType = "list"; // "list" or "grouped"
 
 document.getElementById("scrapeInara").addEventListener("click", scrapeInara);
 document.getElementById("fetchEdsm").addEventListener("click", fetchEdsmData);
+
+// Display type selector buttons
+document.querySelectorAll(".display-type-btn").forEach((btn) => {
+  btn.addEventListener("click", (e) => {
+    document
+      .querySelectorAll(".display-type-btn")
+      .forEach((b) => b.classList.remove("active"));
+    e.target.classList.add("active");
+    currentDisplayType = e.target.dataset.type;
+    applyFilters();
+  });
+});
 
 // Clear URL error when the input changes
 const inaraInputEl = document.getElementById("inaraUrl");
@@ -215,6 +228,16 @@ async function fetchEdsmData() {
 function renderTable(data) {
   const tbody = document.querySelector("#resultTable tbody");
   tbody.innerHTML = "";
+
+  if (currentDisplayType === "grouped") {
+    renderTableGrouped(data);
+  } else {
+    renderTableList(data);
+  }
+}
+
+function renderTableList(data) {
+  const tbody = document.querySelector("#resultTable tbody");
   const now = Date.now();
   for (const row of data) {
     const tr = document.createElement("tr");
@@ -249,6 +272,77 @@ function renderTable(data) {
       <td class="${colorClass}">${diffText}</td>
     `;
     tbody.appendChild(tr);
+  }
+}
+
+function renderTableGrouped(data) {
+  const tbody = document.querySelector("#resultTable tbody");
+  const now = Date.now();
+
+  // Group stations by system
+  const grouped = {};
+  for (const row of data) {
+    if (!grouped[row.system]) {
+      grouped[row.system] = [];
+    }
+    grouped[row.system].push(row);
+  }
+
+  // Sort systems by oldest market update time within each system
+  const systemEntries = Object.entries(grouped).map(([system, stations]) => {
+    // Find the oldest market update time in this system's stations
+    const oldestMarketTime = Math.min(...stations.map((s) => s.updated));
+    return { system, stations, oldestMarketTime };
+  });
+
+  systemEntries.sort((a, b) => a.oldestMarketTime - b.oldestMarketTime);
+
+  // Sort stations within each system by update time (oldest first)
+  systemEntries.forEach(({ stations }) => {
+    stations.sort((a, b) => a.updated - b.updated);
+  });
+
+  // Render with merged cells
+  for (const { system, stations } of systemEntries) {
+    for (let i = 0; i < stations.length; i++) {
+      const row = stations[i];
+      const tr = document.createElement("tr");
+      const updateDate = new Date(row.updated);
+      const diffMs = now - row.updated;
+      const diffDays = diffMs / (1000 * 60 * 60 * 24);
+      const diffText = formatElapsedTime(diffDays);
+
+      let colorClass = "";
+      if (diffDays > 180) {
+        colorClass = "elapsed-red";
+      } else if (diffDays > 3) {
+        colorClass = "elapsed-yellow";
+      }
+
+      // Create system name cell with rowspan for first station only
+      let systemCell = "";
+      if (i === 0) {
+        systemCell = `<td class="system-name-cell copyable" data-copy="${system}" title="Click to copy" rowspan="${stations.length}">${system}</td>`;
+      }
+
+      tr.innerHTML =
+        systemCell +
+        `
+      <td class="copyable" data-copy="${row.station}" title="Click to copy">${
+          row.station
+        }</td>
+      <td>${row.type}</td>
+      <td>${
+        row.economies && row.economies.length ? row.economies.join(", ") : ""
+      }</td>
+      <td>${updateDate
+        .toISOString()
+        .replace("T", " ")
+        .slice(0, 19)}</td>
+      <td class="${colorClass}">${diffText}</td>
+    `;
+      tbody.appendChild(tr);
+    }
   }
 }
 
