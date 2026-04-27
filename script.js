@@ -49,14 +49,12 @@ async function scrapeInara() {
   try {
     let systems = [];
     const target = validation.normalizedUrl;
-    if (validation.type === "power-controlled") {
-      systems = await scrapePowerControlled(target);
-    } else if (validation.type === "power-exploited") {
-      systems = await scrapePowerExploited(target);
-    } else if (validation.type === "power-contested") {
-      systems = await scrapePowerContested(target);
-    } else if (validation.type === "nearest-starsystems") {
+    if (validation.type === "nearest-starsystems") {
       systems = await scrapeNearestStarsystems(target);
+    } else {
+      updateStatus("サポートされていないInaraページタイプです");
+      console.warn("Unsupported Inara URL type:", validation.type);
+      return;
     }
 
     systemNames = [...new Set(systems)];
@@ -82,17 +80,6 @@ function validateInaraUrl(url) {
     let pathname = u.pathname;
     if (!pathname.endsWith("/")) pathname += "/";
 
-    // Power patterns
-    let match = pathname.match(
-      /^\/elite\/(power-(?:controlled|exploited|contested))\/(\d+)\/?$/i
-    );
-    if (match) {
-      const type = match[1].toLowerCase();
-      const id = match[2];
-      const normalizedUrl = `${u.protocol}//${u.host}/elite/${type}/${id}/`;
-      return { ok: true, type, id, normalizedUrl };
-    }
-
     // nearest-starsystems (accepts query params; don't care about the parameters)
     if (/^\/elite\/nearest-starsystems\/$/i.test(pathname)) {
       const normalizedUrl = `${u.protocol}//${u.host}${pathname}${u.search}`;
@@ -102,14 +89,14 @@ function validateInaraUrl(url) {
     return {
       ok: false,
       message:
-        "サポートされていないURLパターンです。例: https://inara.cz/elite/power-controlled/7/ または https://inara.cz/elite/nearest-starsystems/?...",
+        "サポートされていないURLパターンです。例: https://inara.cz/elite/nearest-starsystems/?...",
     };
   } catch (e) {
     return { ok: false, message: "無効なURLです" };
   }
 }
 
-// Generic fetch + parse for power pages
+// Generic fetch + parse for nearest-starsystems / table-based pages
 async function scrapePowerGeneric(targetUrl) {
   const proxy = "https://corsproxy.io/?";
   const url = proxy + encodeURIComponent(targetUrl);
@@ -122,16 +109,6 @@ async function scrapePowerGeneric(targetUrl) {
     ),
   ];
   return links.map((a) => a.textContent.replace(/\s+/g, " ").trim());
-}
-
-async function scrapePowerControlled(targetUrl) {
-  return scrapePowerGeneric(targetUrl);
-}
-async function scrapePowerExploited(targetUrl) {
-  return scrapePowerGeneric(targetUrl);
-}
-async function scrapePowerContested(targetUrl) {
-  return scrapePowerGeneric(targetUrl);
 }
 
 // nearest-starsystems uses the page's main table; reuse the generic table scraper
