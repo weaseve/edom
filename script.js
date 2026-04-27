@@ -96,7 +96,7 @@ function validateInaraUrl(url) {
   }
 }
 
-// Generic fetch + parse for power pages
+// Generic fetch + parse for nearest-starsystems / table-based pages
 async function scrapePowerGeneric(targetUrl) {
   const proxy = "https://corsproxy.io/?";
   const url = proxy + encodeURIComponent(targetUrl);
@@ -109,16 +109,6 @@ async function scrapePowerGeneric(targetUrl) {
     ),
   ];
   return links.map((a) => a.textContent.replace(/\s+/g, " ").trim());
-}
-
-async function scrapePowerControlled(targetUrl) {
-  return scrapePowerGeneric(targetUrl);
-}
-async function scrapePowerExploited(targetUrl) {
-  return scrapePowerGeneric(targetUrl);
-}
-async function scrapePowerContested(targetUrl) {
-  return scrapePowerGeneric(targetUrl);
 }
 
 // nearest-starsystems uses the page's main table; reuse the generic table scraper
